@@ -229,7 +229,8 @@ function GiniBar({ value }: { value: number }) {
   const color = value > 0.65 ? '#D32F2F' : value > 0.55 ? '#F59E0B' : '#008CFF';
   return (
     <div className="flex items-center gap-2">
-      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+      <div className="relative h-1.5 flex-1 
+      hidden rounded-full bg-slate-100">
         <div
           className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, background: color }}
