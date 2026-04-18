@@ -770,9 +770,37 @@ export default function CrisisPage({ params }: { params: Promise<{ id: string }>
       }],
     },
   ];
-
+  
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans overflow-y-auto">
+      {/* Top nav bar */}
+      <header className="sticky top-0 z-40 flex items-center gap-4 border-b border-slate-200 bg-white/95 px-6 py-3 backdrop-blur-xl">
+        <button
+          onClick={() => router.push('/')}
+          className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+        >
+          <ArrowLeft size={13} />
+          Crisis Overview
+        </button>
+
+        <ChevronRight size={12} className="text-slate-300" />
+
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-[#008CFF]">
+            <Globe size={12} className="text-white" />
+          </div>
+          <span className="text-[12px] font-bold text-slate-800">{country.name}</span>
+          <PriorityBadge level={country.priority} />
+        </div>
+
+        <div className="ml-auto flex items-center gap-3">
+          <span className="text-[10px] text-slate-400">{country.region} · {country.conflictType}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-[10px] font-medium text-slate-500">
+            <Activity size={9} /> Live · OCHA FY2026
+          </span>
+        </div>
+      </header>
+
       <CrisisLeftPane country={country} onBack={() => router.push('/')} />
 
       {/* Center — scrollable content */}

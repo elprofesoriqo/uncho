@@ -19,6 +19,7 @@ import {
   Users,
   DollarSign,
 } from 'lucide-react';
+import { useRouter } from "next/navigation";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -444,10 +445,7 @@ function CenterStage({
                             onCountryEnter(crisisCountry.id, e);
                           }}
                           onMouseLeave={onCountryLeave}
-                          onClick={() => {
-                            if (!crisisCountry) return;
-                            onCountryClick(crisisCountry.id);
-                          }}
+                          onClick={() => crisisCountry && onCountryClick(crisisCountry.id)}
                           style={{
                             default: {
                               fill: baseFill,
