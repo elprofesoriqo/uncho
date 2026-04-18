@@ -40,7 +40,7 @@ export function AICopilot({
   }, [draft, status, sendMessage]);
 
   return (
-    <aside className="flex h-full w-72 shrink-0 flex-col border-l border-slate-200 bg-white">
+    <aside className="flex h-full w-80 shrink-0 flex-col border-l border-slate-200 bg-white">
       <CopilotHeader subtitle={subtitle} />
 
       {/* Sandbox slot (optional) */}

@@ -39,7 +39,7 @@ export function SectorFunding({ sectors }: { sectors: SectorData[] }) {
   );
 
   return (
-    <section>
+    <section className="rounded-2xl border border-slate-200 bg-white shadow-xl p-5">
       <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
         Sector Funding
       </p>

@@ -18,8 +18,7 @@ import {
   Users,
   DollarSign,
 } from "lucide-react";
-import LightHouseLogo from "../public/lighthouse-logo.svg";
-import Image from "next/image";
+import { LighthouseBrand } from "./components/ui/LighthouseBrand";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -270,40 +269,6 @@ function ContextPortal({ portal }: { portal: PortalState }) {
   );
 }
 
-// ─── Left Pane ────────────────────────────────────────────────────────────────
-
-function LeftPane() {
-  return (
-    <aside className="flex h-full w-56 shrink-0 flex-col border-r border-slate-200 bg-white">
-
-      {/* Nav */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4">
-        <p className="mb-2 px-3 text-[9px] font-semibold uppercase tracking-widest text-slate-400">
-          Operations
-        </p>
-        <SidebarNavLink icon={Globe} label="Crisis Overview" active />
-        <SidebarNavLink icon={BarChart3} label="Funding Gaps" />
-        <SidebarNavLink icon={TrendingDown} label="Access Corridors" />
-        <SidebarNavLink icon={Users} label="PiN Registry" />
-
-        <p className="mb-2 mt-5 px-3 text-[9px] font-semibold uppercase tracking-widest text-slate-400">
-          Intelligence
-        </p>
-        <SidebarNavLink icon={Bot} label="AI Co-Pilot" />
-        <SidebarNavLink icon={Layers} label="Cluster Data" />
-        <SidebarNavLink icon={ShieldAlert} label="Alert Feed" />
-      </nav>
-
-      {/* System Health */}
-      <div className="border-t border-slate-100 px-4 py-3">
-        <SystemStatusCard label="Backend Linked" detail="8 feeds · 42ms" />
-      </div>
-    </aside>
-  );
-}
-
-// ─── Center Stage (Map) ───────────────────────────────────────────────────────
-
 function CenterStage({
   onMouseMove,
   onCountryEnter,
@@ -323,13 +288,7 @@ function CenterStage({
       {/* Header bar */}
       <div className="mb-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-12 p-3 rounded-xl bg-un-blue shadow-sm">
-            <Image
-              src={LightHouseLogo}
-              alt="Lighthouse Logo"
-              className="h-full w-auto"
-            />
-          </div>
+          <LighthouseBrand />
           <div>
             <h1 className="text-base font-bold text-slate-900">
               Global Crisis Command
@@ -351,13 +310,7 @@ function CenterStage({
       </div>
 
       {/* Map card */}
-      <div
-        className="relative flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl"
-        style={{
-          boxShadow:
-            "0 8px 40px rgba(0,140,255,0.07), 0 2px 8px rgba(0,0,0,0.05)",
-        }}
-      >
+      <div className="relative flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
         {/* Subtle grid background */}
         <div
           className="absolute inset-0 opacity-30"
