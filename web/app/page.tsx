@@ -158,6 +158,29 @@ function getCountryHeat(country: CountryData): string {
   return `hsl(${Math.round(hue)} ${saturation}% ${Math.round(lightness)}%)`;
 }
 
+function darkenColor(color: string, amount: number): string {
+  const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/i);
+  if (hslMatch) {
+    const h = Number(hslMatch[1]);
+    const s = Number(hslMatch[2]);
+    const l = Number(hslMatch[3]);
+    return `hsl(${h} ${s}% ${Math.max(0, l - amount)}%)`;
+  }
+
+  const hexMatch = color.match(/^#([\da-f]{6})$/i);
+  if (hexMatch) {
+    const hex = hexMatch[1];
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    const ratio = Math.max(0, Math.min(1, (100 - amount) / 100));
+    const darken = (v: number) => Math.round(v * ratio);
+    return `rgb(${darken(r)}, ${darken(g)}, ${darken(b)})`;
+  }
+
+  return color;
+}
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function GiniBar({ value }: { value: number }) {
@@ -352,8 +375,8 @@ function CenterStage({
             height={600}
             projection="geoMercator"
             projectionConfig={{
-              scale: 120,
-              center: [0, 46],
+              scale: 125,
+              center: [0, 40],
             }}
             preserveAspectRatio="xMidYMid slice"
             className="h-full w-full"
@@ -403,16 +426,16 @@ function CenterStage({
                               outline: "none",
                             },
                             hover: {
-                              fill: crisisCountry ? "#D32F2F" : "#DDE4EC",
-                              stroke: "#BFC9D6",
-                              strokeWidth: 0.6,
+                              fill: darkenColor(baseFill, 5),
+                              stroke: "#D6DEE8",
+                              strokeWidth: 0.45,
                               outline: "none",
                               cursor: crisisCountry ? "pointer" : "default",
                             },
                             pressed: {
-                              fill: crisisCountry ? "#B71C1C" : "#DDE4EC",
-                              stroke: "#BFC9D6",
-                              strokeWidth: 0.6,
+                              fill: darkenColor(baseFill, 5),
+                              stroke: "#D6DEE8",
+                              strokeWidth: 0.45,
                               outline: "none",
                             },
                           }}
@@ -432,7 +455,7 @@ function CenterStage({
           </span>
           {[
             { color: "#008CFF", label: "Active Zone" },
-            { color: "#D32F2F", label: "Hovered / Critical" },
+            { color: "#D32F2F", label: "Critical" },
             { color: "#f1f5f9", label: "Region" },
           ].map((l) => (
             <div key={l.label} className="flex items-center gap-1.5">
