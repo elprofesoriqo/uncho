@@ -8,7 +8,8 @@ bronze.fts_cluster_raw  — https://data.humdata.org/dataset/b2bbb33c-2cfb-4809-
 REQUIRED DATA CLEANING (drop/recalculate percentFunded column)
 bronze.cod_population   — https://data.humdata.org/dataset/cod-ps-global
 ADMIN1,2,3,4 -> ADMINISTRATIVE LEVELS IN 
-bronze.cbpf_allocations — WIP MAKS
+bronze.cbpf_allocations — https://docs.google.com/spreadsheets/d/e/2PACX-1vRyEbNqi7QufuCwGCgbcdWCC3O7dFzwoZPm6tjUJ4RAI0ah12nTZLr5Gdaz-l44bTTOcIg9l2LP3GK_/pub?gid=1866794021&single=true&output=csv
+REQUIRED DATA CLEANING (Country name to ISO3, drop(['PaidAmtLocal', 'PledgeAmtLocal', 'PaidAmtCurrencyExchangeRate', 'PaidAmtLocalCurrency', 'PledgeAmtCurrencyExchangeRate', 'PledgeAmtLocalCurrency', 'ExpectedDate'], axis=1, inplace=True), rename(columns={'PledgeAmt': 'PledgeAmtUSD', 'PaidAmt': 'PaidAmtUSD'}))
 bronze.inform_severity  — https://api.acaps.org/api/v1/
 DOPRECYZOWAC JAKIE DANE ZEBRAC, JACEK MA API KEY
 bronze.acled_events     — https://acleddata.com/platform/explorer
