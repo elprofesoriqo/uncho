@@ -780,7 +780,7 @@ export default function CrisisPage({ params }: { params: Promise<{ id: string }>
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans overflow-y-auto">
       {/* Top nav bar */}
       <header className="sticky top-0 z-40 flex items-center gap-4 border-b border-slate-200 bg-white/95 px-6 py-3 backdrop-blur-xl">
         <button
