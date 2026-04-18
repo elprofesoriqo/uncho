@@ -1,31 +1,25 @@
 'use client';
 
-import { use, useState, useRef, useCallback } from 'react';
+import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport, type UIMessage } from 'ai';
+import { type UIMessage } from 'ai';
 import {
   ArrowLeft,
-  Bot,
-  User,
-  SendHorizontal,
   AlertTriangle,
   DollarSign,
   Users,
   TrendingDown,
-  FileText,
-  Activity,
-  Zap,
   Globe,
-  ChevronRight,
-  BarChart3,
-  ShieldAlert,
-  Newspaper,
+  Wifi,
+  FileText,
   FlaskConical,
+  ChevronDown,
   Download,
   RefreshCw,
   ExternalLink,
+  Newspaper,
 } from 'lucide-react';
+import { AICopilot } from '../../components/AICopilot';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -131,7 +125,7 @@ const COUNTRIES: Record<string, CountryData> = {
       { sector: 'Protection', needScore: 85, fundingScore: 16, gap: 'Detention and trafficking spike unaddressed' },
     ],
     reliefwebUpdates: [
-      { id: 'rw1', title: "Yemen: Hudaydah port throughput at historic low — 12% capacity", date: '2026-04-14', source: 'WFP', type: 'alert', snippet: 'Port damage and access restrictions have reduced import throughput to 12% of baseline, threatening food pipeline for 13M people.' },
+      { id: 'rw1', title: 'Yemen: Hudaydah port throughput at historic low — 12% capacity', date: '2026-04-14', source: 'WFP', type: 'alert', snippet: 'Port damage and access restrictions have reduced import throughput to 12% of baseline, threatening food pipeline for 13M people.' },
       { id: 'rw2', title: 'Famine declared in Al Hudaydah and Taizz governorates', date: '2026-04-11', source: 'IPC', type: 'alert', snippet: 'IPC Phase 5 conditions confirmed for the first time since 2022. Immediate scale-up required.' },
       { id: 'rw3', title: 'Yemen Humanitarian Fund releases $22M for emergency response', date: '2026-04-09', source: 'YHF', type: 'report', snippet: 'Allocation focused on food security and health clusters in southern governorates.' },
       { id: 'rw4', title: 'Airstrikes disrupt humanitarian convoy in Marib', date: '2026-04-06', source: 'OCHA', type: 'update', snippet: 'Three WFP trucks destroyed; staff evacuated. Route suspended pending security assessment.' },
@@ -243,7 +237,7 @@ const COUNTRIES: Record<string, CountryData> = {
       { sector: 'Food Security', needScore: 88, fundingScore: 57, gap: 'Gu season shortfall — urban malnutrition rising' },
     ],
     reliefwebUpdates: [
-      { id: 'rw1', title: "Somalia: Gu season rains 40% below average — food crisis deepens", date: '2026-04-12', source: 'FAO', type: 'alert', snippet: 'Main growing season underperformance threatens harvest, pushing IPC Phase 3-4 population to 4.1M.' },
+      { id: 'rw1', title: 'Somalia: Gu season rains 40% below average — food crisis deepens', date: '2026-04-12', source: 'FAO', type: 'alert', snippet: 'Main growing season underperformance threatens harvest, pushing IPC Phase 3-4 population to 4.1M.' },
       { id: 'rw2', title: 'Al-Shabaab advance closes 180 schools in Bay and Bakool', date: '2026-04-09', source: 'UNICEF', type: 'alert', snippet: '68,000 children out of school; teachers threatened; evacuation corridors blocked.' },
       { id: 'rw3', title: 'Somalia Humanitarian Fund: $12M emergency release', date: '2026-04-06', source: 'SHF', type: 'report', snippet: 'Priority to food security and WASH interventions in drought-affected regions.' },
       { id: 'rw4', title: 'Flash floods in Hirshabelle displace 85K', date: '2026-04-04', source: 'OCHA', type: 'update', snippet: 'Juba riverine communities most affected; shelter and WASH needs immediate.' },
@@ -271,7 +265,7 @@ const COUNTRIES: Record<string, CountryData> = {
       { sector: 'WASH', needScore: 70, fundingScore: 81, gap: 'Good coverage in urban; rural gap persists' },
     ],
     reliefwebUpdates: [
-      { id: 'rw1', title: "Syria: Post-HTS transition — humanitarian access improving in northwest", date: '2026-04-14', source: 'OCHA', type: 'update', snippet: 'Cross-line access to Idlib expanded following political transition. 18 new convoy routes approved.' },
+      { id: 'rw1', title: 'Syria: Post-HTS transition — humanitarian access improving in northwest', date: '2026-04-14', source: 'OCHA', type: 'update', snippet: 'Cross-line access to Idlib expanded following political transition. 18 new convoy routes approved.' },
       { id: 'rw2', title: 'Reconstruction funding asymmetry: Damascus vs. northeast divide', date: '2026-04-11', source: 'World Bank', type: 'report', snippet: 'Urban reconstruction pace 4x faster than rural northeast. Equity assessment recommends reallocation.' },
       { id: 'rw3', title: 'Syria returnee assessment: 1.8M returnees face documentation barriers', date: '2026-04-09', source: 'UNHCR', type: 'report', snippet: 'Property restitution and civil documentation gaps block durable solutions for returnees.' },
       { id: 'rw4', title: 'Earthquake aftershock sequence — structural damage in Aleppo', date: '2026-04-05', source: 'UNOSAT', type: 'alert', snippet: '340 buildings flagged for structural assessment; 12,000 residents temporarily displaced.' },
@@ -299,7 +293,7 @@ const COUNTRIES: Record<string, CountryData> = {
       { sector: 'Protection', needScore: 70, fundingScore: 74, gap: 'Good coverage — mine risk education scaling' },
     ],
     reliefwebUpdates: [
-      { id: 'rw1', title: "Ukraine: Mass energy infrastructure strikes — 6.2M without heating", date: '2026-04-15', source: 'OCHA', type: 'alert', snippet: 'Coordinated strikes on energy grid leave 6.2M people without heating amid sub-zero temperatures.' },
+      { id: 'rw1', title: 'Ukraine: Mass energy infrastructure strikes — 6.2M without heating', date: '2026-04-15', source: 'OCHA', type: 'alert', snippet: 'Coordinated strikes on energy grid leave 6.2M people without heating amid sub-zero temperatures.' },
       { id: 'rw2', title: 'Winter HRP performance: 74% funded — gaps in eastern oblasts', date: '2026-04-12', source: 'OCHA', type: 'report', snippet: 'Donetsk and Zaporizhzhia oblasts at 58% and 61% funding coverage respectively.' },
       { id: 'rw3', title: 'Mine contamination survey: 30% of agricultural land affected', date: '2026-04-09', source: 'HALO Trust', type: 'report', snippet: 'Contamination blocking spring planting season; food security implications for rural households.' },
       { id: 'rw4', title: 'Protection monitoring: 1.4M people in high-risk zones refuse to evacuate', date: '2026-04-06', source: 'UNHCR', type: 'update', snippet: 'Attachment to property and lack of destination support cited as primary barriers to evacuation.' },
@@ -314,446 +308,430 @@ const PRIORITY_COLORS: Record<string, string> = {
   MODERATE: 'bg-blue-100 text-blue-700 border-blue-200',
 };
 
-// ─── Shared sub-components ────────────────────────────────────────────────────
-
-function PriorityBadge({ level }: { level: CountryData['priority'] }) {
-  return (
-    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${PRIORITY_COLORS[level]}`}>
-      {level === 'CRITICAL' && <span className="h-1.5 w-1.5 rounded-full bg-red-500" />}
-      {level === 'HIGH' && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
-      {level === 'MODERATE' && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
-      {level}
-    </span>
-  );
-}
-
-function SectionCard({ title, icon: Icon, children, className = '' }: {
-  title: string;
-  icon: React.ElementType;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={`rounded-2xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}>
-      <div className="mb-4 flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#008CFF]/10">
-          <Icon size={14} className="text-[#008CFF]" strokeWidth={2.2} />
-        </div>
-        <h2 className="text-sm font-bold text-slate-800">{title}</h2>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-// ─── Sector funding bars ──────────────────────────────────────────────────────
-
-function UnderfundedAreas({ sectors }: { sectors: SectorData[] }) {
-  const sorted = [...sectors].sort((a, b) => {
-    const gapA = (a.required - a.received) / a.required;
-    const gapB = (b.required - b.received) / b.required;
-    return gapB - gapA;
-  });
-
-  return (
-    <SectionCard title="Underfunded Areas by Sector" icon={BarChart3}>
-      <div className="space-y-3">
-        {sorted.map((s) => {
-          const pct = Math.round((s.received / s.required) * 100);
-          const gap = s.required - s.received;
-          const color = pct < 30 ? '#D32F2F' : pct < 55 ? '#F59E0B' : '#008CFF';
-          return (
-            <div key={s.name}>
-              <div className="mb-1 flex items-center justify-between">
-                <span className="text-[12px] font-semibold text-slate-700">{s.name}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-slate-400">
-                    ${gap}M gap · {s.pin.toLocaleString()}{s.unit}
-                  </span>
-                  <span
-                    className="text-[11px] font-bold tabular-nums"
-                    style={{ color }}
-                  >
-                    {pct}%
-                  </span>
-                </div>
-              </div>
-              <div className="relative h-2 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
-                  style={{ width: `${pct}%`, background: color }}
-                />
-              </div>
-              <div className="mt-0.5 flex justify-between text-[9px] text-slate-400">
-                <span>${s.received}M received</span>
-                <span>${s.required}M required</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </SectionCard>
-  );
-}
-
-// ─── Allocation mismatch ──────────────────────────────────────────────────────
-
-function AllocationMismatch({ items }: { items: MismatchItem[] }) {
-  return (
-    <SectionCard title="Allocation Mismatch Analysis" icon={Activity}>
-      <p className="mb-4 text-[11px] text-slate-500">
-        Need score vs. funding score per cluster — high divergence indicates misallocation risk.
-      </p>
-      <div className="space-y-4">
-        {items.map((item) => {
-          const divergence = item.needScore - item.fundingScore;
-          const isOverfunded = divergence < 0;
-          return (
-            <div key={item.sector} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-[12px] font-bold text-slate-800">{item.sector}</span>
-                <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                    isOverfunded
-                      ? 'bg-blue-100 text-blue-700'
-                      : divergence > 50
-                      ? 'bg-red-100 text-red-700'
-                      : 'bg-amber-100 text-amber-700'
-                  }`}
-                >
-                  {isOverfunded ? `+${Math.abs(divergence)} overfunded` : `−${divergence} gap`}
-                </span>
-              </div>
-              <div className="mb-2 grid grid-cols-2 gap-2">
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Need Score</p>
-                  <div className="mt-1 relative h-1.5 overflow-hidden rounded-full bg-slate-200">
-                    <div className="absolute left-0 top-0 h-full rounded-full bg-red-400" style={{ width: `${item.needScore}%` }} />
-                  </div>
-                  <p className="mt-0.5 text-[11px] font-bold text-red-600">{item.needScore}/100</p>
-                </div>
-                <div>
-                  <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">Funding Score</p>
-                  <div className="mt-1 relative h-1.5 overflow-hidden rounded-full bg-slate-200">
-                    <div className="absolute left-0 top-0 h-full rounded-full bg-[#008CFF]" style={{ width: `${item.fundingScore}%` }} />
-                  </div>
-                  <p className="mt-0.5 text-[11px] font-bold text-[#008CFF]">{item.fundingScore}/100</p>
-                </div>
-              </div>
-              <p className="text-[10px] leading-snug text-slate-500">{item.gap}</p>
-            </div>
-          );
-        })}
-      </div>
-    </SectionCard>
-  );
-}
-
-// ─── ReliefWeb updates ────────────────────────────────────────────────────────
-
 const UPDATE_TYPE_STYLES = {
   alert: 'bg-red-50 border-red-200 text-red-600',
   report: 'bg-blue-50 border-blue-200 text-blue-600',
   update: 'bg-amber-50 border-amber-200 text-amber-600',
 };
 
-function RecentDevelopments({ updates }: { updates: ReliefUpdate[] }) {
+// ─── Left Pane ────────────────────────────────────────────────────────────────
+
+function CrisisLeftPane({ country, onBack }: { country: CountryData; onBack: () => void }) {
+  const coverageColor =
+    country.fundingPct < 50 ? '#D32F2F' : country.fundingPct < 70 ? '#F59E0B' : '#22c55e';
+
   return (
-    <SectionCard title="Recent Developments — ReliefWeb" icon={Newspaper}>
-      <div className="space-y-3">
-        {updates.map((u) => (
-          <div key={u.id} className="rounded-xl border border-slate-100 p-3 hover:border-slate-200 transition-colors">
-            <div className="mb-1.5 flex items-center justify-between gap-2">
-              <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${UPDATE_TYPE_STYLES[u.type]}`}>
-                {u.type}
-              </span>
-              <span className="text-[9px] text-slate-400">{u.date} · {u.source}</span>
+    <aside className="flex h-full w-56 shrink-0 flex-col border-r border-slate-200 bg-white">
+      {/* Logo + back */}
+      <div className="flex items-center gap-2.5 border-b border-slate-100 px-5 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#008CFF] shadow-sm">
+          <Globe size={16} className="text-white" strokeWidth={2.2} />
+        </div>
+        <div>
+          <p className="text-[11px] font-bold leading-none tracking-widest text-[#008CFF] uppercase">
+            Lighthouse
+          </p>
+          <p className="text-[9px] font-medium tracking-widest text-slate-400 uppercase">
+            OS · v2.4.1
+          </p>
+        </div>
+      </div>
+
+      {/* Back nav */}
+      <div className="border-b border-slate-100 px-3 py-2">
+        <button
+          onClick={onBack}
+          className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+        >
+          <ArrowLeft size={12} />
+          Crisis Overview
+        </button>
+      </div>
+
+      {/* Country header */}
+      <div className="border-b border-slate-100 px-5 py-4">
+        <p className="mb-1 text-[9px] font-semibold uppercase tracking-widest text-slate-400">
+          Active Crisis
+        </p>
+        <h2 className="mb-1.5 text-base font-bold text-slate-900">{country.name}</h2>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${PRIORITY_COLORS[country.priority]}`}
+        >
+          {country.priority === 'CRITICAL' && <span className="h-1.5 w-1.5 rounded-full bg-red-500" />}
+          {country.priority === 'HIGH' && <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />}
+          {country.priority === 'MODERATE' && <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />}
+          {country.priority}
+        </span>
+        <p className="mt-2 text-[10px] leading-snug text-slate-400">
+          {country.region} · Since {country.responseYear}
+        </p>
+        <p className="mt-0.5 text-[10px] leading-snug text-slate-400">{country.conflictType}</p>
+      </div>
+
+      {/* Key stats */}
+      <div className="flex-1 space-y-0 overflow-y-auto px-5 py-4">
+        {[
+          { label: 'Funding Gap', value: country.fundingGap, icon: DollarSign, valueColor: 'text-red-600' },
+          { label: 'People in Need', value: country.pin, icon: Users, valueColor: 'text-slate-800' },
+          { label: 'HRP Coverage', value: `${country.fundingPct}%`, icon: TrendingDown, valueColor: country.fundingPct < 50 ? 'text-red-600' : country.fundingPct < 70 ? 'text-amber-600' : 'text-emerald-600' },
+        ].map((s) => (
+          <div key={s.label} className="mb-4">
+            <div className="mb-0.5 flex items-center gap-1 text-[9px] font-semibold uppercase tracking-wide text-slate-400">
+              <s.icon size={9} />
+              {s.label}
             </div>
-            <p className="mb-1 text-[12px] font-semibold leading-snug text-slate-800">{u.title}</p>
-            <p className="text-[11px] leading-relaxed text-slate-500">{u.snippet}</p>
-            <button className="mt-1.5 flex items-center gap-1 text-[10px] font-medium text-[#008CFF] hover:underline">
-              View on ReliefWeb <ExternalLink size={9} />
-            </button>
+            <p className={`text-lg font-black ${s.valueColor}`}>{s.value}</p>
           </div>
         ))}
-      </div>
-    </SectionCard>
-  );
-}
 
-// ─── Dossier Generator ────────────────────────────────────────────────────────
-
-function DossierGenerator({ country }: { country: CountryData }) {
-  const [generating, setGenerating] = useState(false);
-  const [generated, setGenerated] = useState(false);
-
-  const handleGenerate = () => {
-    setGenerating(true);
-    setGenerated(false);
-    setTimeout(() => {
-      setGenerating(false);
-      setGenerated(true);
-    }, 2200);
-  };
-
-  return (
-    <SectionCard title="Dossier Generator" icon={FileText}>
-      <p className="mb-4 text-[11px] text-slate-500">
-        Generate a structured situation report combining funding data, sector analysis, and AI synthesis for {country.name}.
-      </p>
-
-      <div className="mb-4 grid grid-cols-2 gap-2">
-        {['Executive Summary', 'Funding Gap Analysis', 'Cluster Breakdown', 'AI Recommendations', 'ReliefWeb Digest', 'Simulation Annex'].map((section) => (
-          <label key={section} className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] font-medium text-slate-700 hover:border-[#008CFF]/40 hover:bg-[#008CFF]/5 transition-colors">
-            <input type="checkbox" defaultChecked className="accent-[#008CFF] h-3 w-3" />
-            {section}
-          </label>
-        ))}
-      </div>
-
-      <div className="mb-3 flex items-center gap-2">
-        <select className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-[11px] text-slate-700 outline-none focus:border-[#008CFF]/40">
-          <option>PDF — UN OCHA format</option>
-          <option>DOCX — Editable brief</option>
-          <option>JSON — Machine-readable</option>
-        </select>
-      </div>
-
-      <button
-        onClick={handleGenerate}
-        disabled={generating}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#008CFF] px-4 py-2.5 text-[12px] font-semibold text-white shadow-sm transition-all hover:bg-[#0070CC] disabled:opacity-60"
-      >
-        {generating ? (
-          <>
-            <RefreshCw size={13} className="animate-spin" />
-            Generating dossier…
-          </>
-        ) : (
-          <>
-            <FileText size={13} />
-            Generate Situation Report
-          </>
-        )}
-      </button>
-
-      {generated && (
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5">
-          <div>
-            <p className="text-[11px] font-bold text-emerald-700">Dossier ready</p>
-            <p className="text-[9px] text-emerald-600">{country.name}_SitRep_April2026.pdf · 2.4 MB</p>
+        {/* Funding progress */}
+        <div className="mt-1">
+          <div className="mb-1.5 flex justify-between text-[9px] text-slate-400">
+            <span>{country.totalReceived} received</span>
+            <span>{country.totalRequired} needed</span>
           </div>
-          <button className="flex items-center gap-1 rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-semibold text-white hover:bg-emerald-700 transition-colors">
-            <Download size={10} />
-            Download
-          </button>
-        </div>
-      )}
-    </SectionCard>
-  );
-}
-
-// ─── Simulation ───────────────────────────────────────────────────────────────
-
-function Simulation({ country }: { country: CountryData }) {
-  const [state, setState] = useState<SimulationState>(country.simulationBase);
-
-  const basePeopleReached = Math.round(parseInt(country.pin) * 0.48 * 100000);
-  const fundingEffect = state.fundingBoost * 180000;
-  const corridorEffect = Math.max(0, (state.corridorAccess - country.simulationBase.corridorAccess)) * 22000;
-  const staffEffect = state.staffSurge * 95000;
-  const totalReached = basePeopleReached + fundingEffect + corridorEffect + staffEffect;
-  const coveragePct = Math.min(99, Math.round((totalReached / (parseInt(country.pin) * 1000000)) * 100));
-
-  return (
-    <SectionCard title="Response Simulation" icon={FlaskConical}>
-      <p className="mb-4 text-[11px] text-slate-500">
-        Adjust response levers to model impact on people reached. Based on OCHA historical delivery ratios.
-      </p>
-
-      <div className="mb-5 space-y-4">
-        <div>
-          <div className="mb-1 flex justify-between text-[11px]">
-            <span className="font-semibold text-slate-700">Additional Funding</span>
-            <span className="font-bold text-[#008CFF]">+${state.fundingBoost * 100}M</span>
-          </div>
-          <input
-            type="range" min={0} max={20} step={1}
-            value={state.fundingBoost}
-            onChange={(e) => setState((s) => ({ ...s, fundingBoost: +e.target.value }))}
-            className="w-full accent-[#008CFF]"
-          />
-          <div className="flex justify-between text-[9px] text-slate-400"><span>$0</span><span>$2B</span></div>
-        </div>
-
-        <div>
-          <div className="mb-1 flex justify-between text-[11px]">
-            <span className="font-semibold text-slate-700">Corridor Access</span>
-            <span className="font-bold text-[#008CFF]">{state.corridorAccess}%</span>
-          </div>
-          <input
-            type="range" min={country.simulationBase.corridorAccess} max={100} step={5}
-            value={state.corridorAccess}
-            onChange={(e) => setState((s) => ({ ...s, corridorAccess: +e.target.value }))}
-            className="w-full accent-[#008CFF]"
-          />
-          <div className="flex justify-between text-[9px] text-slate-400"><span>Current: {country.simulationBase.corridorAccess}%</span><span>100%</span></div>
-        </div>
-
-        <div>
-          <div className="mb-1 flex justify-between text-[11px]">
-            <span className="font-semibold text-slate-700">Staff Surge</span>
-            <span className="font-bold text-[#008CFF]">+{state.staffSurge * 50} field staff</span>
-          </div>
-          <input
-            type="range" min={0} max={10} step={1}
-            value={state.staffSurge}
-            onChange={(e) => setState((s) => ({ ...s, staffSurge: +e.target.value }))}
-            className="w-full accent-[#008CFF]"
-          />
-          <div className="flex justify-between text-[9px] text-slate-400"><span>0</span><span>+500</span></div>
-        </div>
-      </div>
-
-      <div className="rounded-xl border border-[#008CFF]/20 bg-[#008CFF]/5 p-4">
-        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#008CFF]">Projected Outcome</p>
-        <div className="flex items-end gap-3">
-          <div>
-            <p className="text-2xl font-black text-slate-900">{(totalReached / 1000000).toFixed(2)}M</p>
-            <p className="text-[10px] text-slate-500">people reached</p>
-          </div>
-          <div className="mb-1">
-            <span className="text-[12px] font-bold text-[#008CFF]">{coveragePct}% coverage</span>
-            <p className="text-[10px] text-slate-400">of {country.pin} PiN</p>
-          </div>
-        </div>
-        <div className="mt-2 relative h-2 overflow-hidden rounded-full bg-slate-200">
-          <div
-            className="absolute left-0 top-0 h-full rounded-full bg-[#008CFF] transition-all duration-500"
-            style={{ width: `${coveragePct}%` }}
-          />
-        </div>
-      </div>
-    </SectionCard>
-  );
-}
-
-// ─── AI Co-Pilot ──────────────────────────────────────────────────────────────
-
-function AICopilot({ country }: { country: CountryData }) {
-  const seedMessages: UIMessage[] = [
-    {
-      id: 'seed-1',
-      role: 'assistant',
-      parts: [{
-        type: 'text',
-        text: `**${country.name} Crisis Brief — AI Synthesis**\n\nFunding coverage is at **${country.fundingPct}%** of the ${country.totalRequired} requirement, leaving a **${country.fundingGap} gap**. The most critical underserved cluster is ${country.sectors.reduce((a, b) => ((b.required - b.received) / b.required > (a.required - a.received) / a.required ? b : a)).name}. AI alert: ${country.aiInsight}\n\nRecommended immediate actions:\n1. Prioritise WASH and Protection cluster replenishment\n2. Activate emergency corridor negotiations\n3. Request CERF Rapid Response allocation\n\nAsk me to elaborate on any aspect, draft a donor appeal, or model a specific scenario.`,
-      }],
-    },
-  ];
-
-  const { messages, sendMessage, status } = useChat({
-    messages: seedMessages,
-    transport: new DefaultChatTransport({ api: '/api/chat' }),
-  });
-
-  const [draft, setDraft] = useState('');
-  const bottomRef = useRef<HTMLDivElement>(null);
-
-  const submit = useCallback(() => {
-    const text = draft.trim();
-    if (!text || status === 'streaming') return;
-    sendMessage({ text });
-    setDraft('');
-  }, [draft, status, sendMessage]);
-
-  const formatContent = (text: string) =>
-    text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
-      part.startsWith('**') ? (
-        <strong key={i} className="font-semibold text-slate-800">{part.slice(2, -2)}</strong>
-      ) : (
-        <span key={i}>{part}</span>
-      )
-    );
-
-  const getMessageText = (m: UIMessage): string => {
-    const textPart = m.parts.find((p) => p.type === 'text') as { type: 'text'; text: string } | undefined;
-    return textPart?.text ?? '';
-  };
-
-  const QUICK_PROMPTS = [
-    'Draft donor appeal',
-    'Worst-case scenario',
-    'Top 3 priorities',
-    'CERF eligibility',
-    'Access constraints',
-  ];
-
-  return (
-    <SectionCard title="AI Co-Pilot — ReliefWeb Intelligence" icon={Bot} className="flex flex-col">
-      <div className="flex-1 space-y-3 max-h-80 pr-1">
-        {messages.map((m, i) => {
-          const text = getMessageText(m);
-          return (
+          <div className="relative h-1.5 overflow-hidden rounded-full bg-slate-100">
             <div
-              key={m.id}
-              className={`flex gap-2.5 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}
-              style={{ animationDelay: `${i * 0.04}s` }}
-            >
-              <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${m.role === 'assistant' ? 'bg-[#008CFF]/10' : 'bg-slate-100'}`}>
-                {m.role === 'assistant' ? <Bot size={11} className="text-[#008CFF]" /> : <User size={11} className="text-slate-500" />}
+              className="absolute left-0 top-0 h-full rounded-full"
+              style={{ width: `${country.fundingPct}%`, background: coverageColor }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* System health */}
+      <div className="border-t border-slate-100 px-4 py-3">
+        <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <div>
+            <p className="text-[10px] font-bold text-emerald-700">Live Feed</p>
+            <p className="text-[9px] text-emerald-600">ReliefWeb · 42ms</p>
+          </div>
+          <Wifi size={11} className="ml-auto text-emerald-500" />
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// ─── Sector Funding ───────────────────────────────────────────────────────────
+
+function SectorFunding({ sectors }: { sectors: SectorData[] }) {
+  const sorted = [...sectors].sort(
+    (a, b) => (b.required - b.received) / b.required - (a.required - a.received) / a.required
+  );
+  return (
+    <section>
+      <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        Sector Funding
+      </p>
+      <p className="mb-4 text-[11px] text-slate-400">
+        How much of each cluster&apos;s requirement has been funded — sorted by worst gap first.
+      </p>
+      <div className="space-y-3">
+        {sorted.map((s) => {
+          const pct = Math.round((s.received / s.required) * 100);
+          const gap = s.required - s.received;
+          const color = pct < 30 ? '#D32F2F' : pct < 55 ? '#F59E0B' : '#008CFF';
+          return (
+            <div key={s.name} className="flex items-center gap-3">
+              <span className="w-24 shrink-0 text-[12px] font-medium text-slate-700">{s.name}</span>
+              <div className="relative flex-1 h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="absolute left-0 top-0 h-full rounded-full transition-all duration-700"
+                  style={{ width: `${pct}%`, background: color }}
+                />
               </div>
-              <div className={`max-w-[90%] rounded-2xl px-3 py-2.5 text-[12px] leading-relaxed whitespace-pre-line ${m.role === 'assistant' ? 'rounded-tl-sm bg-slate-50 text-slate-700 border border-slate-100' : 'rounded-tr-sm bg-[#008CFF] text-white'}`}>
-                {m.role === 'assistant' ? formatContent(text) : text}
-              </div>
+              <span className="w-8 text-right text-[11px] font-bold tabular-nums" style={{ color }}>
+                {pct}%
+              </span>
+              <span className="w-20 text-right text-[10px] text-slate-400">${gap}M gap</span>
             </div>
           );
         })}
-        {status === 'streaming' && (
-          <div className="flex gap-2.5">
-            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#008CFF]/10">
-              <Bot size={11} className="text-[#008CFF]" />
+      </div>
+    </section>
+  );
+}
+
+// ─── Allocation Mismatch ──────────────────────────────────────────────────────
+
+function AllocationMismatch({ items }: { items: MismatchItem[] }) {
+  return (
+    <section>
+      <p className="mb-0.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+        Allocation Mismatch
+      </p>
+      <p className="mb-4 text-[11px] text-slate-400">
+        Need severity vs. funding received per cluster (0–100). A large gap signals misallocation risk.
+      </p>
+      <div className="space-y-4">
+        {items.map((item) => {
+          const div = item.needScore - item.fundingScore;
+          const isOver = div < 0;
+          return (
+            <div key={item.sector}>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-[12px] font-semibold text-slate-800">{item.sector}</span>
+                <span
+                  className={`text-[10px] font-semibold ${
+                    isOver ? 'text-blue-500' : div > 50 ? 'text-red-500' : 'text-amber-500'
+                  }`}
+                >
+                  {isOver ? `+${Math.abs(div)} overfunded` : `−${div} gap`}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-12 text-[9px] text-slate-400">Need</span>
+                  <div className="relative flex-1 h-1.5 overflow-hidden rounded-full bg-red-50">
+                    <div
+                      className="absolute left-0 top-0 h-full rounded-full bg-red-400"
+                      style={{ width: `${item.needScore}%` }}
+                    />
+                  </div>
+                  <span className="w-6 text-right text-[9px] font-bold text-red-500">{item.needScore}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-12 text-[9px] text-slate-400">Funded</span>
+                  <div className="relative flex-1 h-1.5 overflow-hidden rounded-full bg-blue-50">
+                    <div
+                      className="absolute left-0 top-0 h-full rounded-full bg-[#008CFF]"
+                      style={{ width: `${item.fundingScore}%` }}
+                    />
+                  </div>
+                  <span className="w-6 text-right text-[9px] font-bold text-[#008CFF]">{item.fundingScore}</span>
+                </div>
+              </div>
+              <p className="mt-1 text-[10px] text-slate-400">{item.gap}</p>
             </div>
-            <div className="flex items-center gap-1 rounded-2xl rounded-tl-sm border border-slate-100 bg-slate-50 px-3 py-2.5">
-              {[0, 1, 2].map((i) => (
-                <span key={i} className="h-1.5 w-1.5 rounded-full bg-slate-400" style={{ animation: 'pulse 1s ease-in-out infinite', animationDelay: `${i * 0.15}s` }} />
-              ))}
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ─── Recent Developments ──────────────────────────────────────────────────────
+
+function RecentDevelopments({ updates }: { updates: ReliefUpdate[] }) {
+  return (
+    <section>
+      <div className="mb-0.5 flex items-center gap-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+          Recent Developments
+        </p>
+        <Newspaper size={10} className="text-slate-300" />
+      </div>
+      <p className="mb-4 text-[11px] text-slate-400">Latest situation reports from ReliefWeb.</p>
+      <div className="space-y-4">
+        {updates.map((u) => (
+          <div key={u.id} className="flex gap-3">
+            <div className="mt-0.5 flex flex-col items-center">
+              <div
+                className={`h-2 w-2 shrink-0 rounded-full border ${UPDATE_TYPE_STYLES[u.type]}`}
+              />
+              <div className="mt-1 w-px flex-1 bg-slate-100" />
+            </div>
+            <div className="pb-4">
+              <div className="mb-1 flex items-center gap-2">
+                <span
+                  className={`rounded-full border px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wide ${UPDATE_TYPE_STYLES[u.type]}`}
+                >
+                  {u.type}
+                </span>
+                <span className="text-[9px] text-slate-400">{u.date} · {u.source}</span>
+              </div>
+              <p className="mb-0.5 text-[12px] font-semibold leading-snug text-slate-800">{u.title}</p>
+              <p className="text-[11px] leading-relaxed text-slate-500">{u.snippet}</p>
+              <button className="mt-1 flex items-center gap-1 text-[10px] font-medium text-[#008CFF] hover:underline">
+                ReliefWeb <ExternalLink size={8} />
+              </button>
             </div>
           </div>
-        )}
-        <div ref={bottomRef} />
+        ))}
       </div>
+    </section>
+  );
+}
 
-      <div className="mt-3 border-t border-slate-100 pt-3">
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {QUICK_PROMPTS.map((chip) => (
-            <button
-              key={chip}
-              onClick={() => setDraft(chip)}
-              className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] font-medium text-slate-600 hover:border-[#008CFF]/40 hover:bg-[#008CFF]/5 hover:text-[#008CFF] transition-colors"
+// ─── Sandbox (Dossier + Simulation as AI propositions) ────────────────────────
+
+function SandboxCard({
+  title,
+  icon: Icon,
+  description,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  icon: React.ElementType;
+  description: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
+      >
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#008CFF]/10">
+          <Icon size={12} className="text-[#008CFF]" strokeWidth={2.2} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[11px] font-semibold text-slate-800">{title}</p>
+          <p className="truncate text-[9px] text-slate-400">{description}</p>
+        </div>
+        <ChevronDown
+          size={12}
+          className={`shrink-0 text-slate-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      {open && (
+        <div className="border-t border-slate-100 px-3 pb-3 pt-2.5">{children}</div>
+      )}
+    </div>
+  );
+}
+
+function CrisisSandbox({ country }: { country: CountryData }) {
+  const [openCard, setOpenCard] = useState<'dossier' | 'sim' | null>(null);
+  const toggle = (card: 'dossier' | 'sim') =>
+    setOpenCard((prev) => (prev === card ? null : card));
+
+  // Dossier state
+  const [generating, setGenerating] = useState(false);
+  const [generated, setGenerated] = useState(false);
+  const handleGenerate = () => {
+    setGenerating(true);
+    setGenerated(false);
+    setTimeout(() => { setGenerating(false); setGenerated(true); }, 2200);
+  };
+
+  // Simulation state
+  const [sim, setSim] = useState<SimulationState>(country.simulationBase);
+  const basePeopleReached = Math.round(parseFloat(country.pin) * 0.48 * 1000000);
+  const totalReached = basePeopleReached + sim.fundingBoost * 180000
+    + Math.max(0, sim.corridorAccess - country.simulationBase.corridorAccess) * 22000
+    + sim.staffSurge * 95000;
+  const coveragePct = Math.min(99, Math.round((totalReached / (parseFloat(country.pin) * 1000000)) * 100));
+
+  return (
+    <div className="space-y-1.5 px-3 py-3">
+      <p className="mb-2 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+        AI Sandbox
+      </p>
+
+      {/* Dossier */}
+      <SandboxCard
+        title="Situation Dossier"
+        icon={FileText}
+        description="Generate a structured situation report"
+        open={openCard === 'dossier'}
+        onToggle={() => toggle('dossier')}
+      >
+        <div className="mb-2.5 grid grid-cols-2 gap-1.5">
+          {['Executive Summary', 'Funding Gap', 'Cluster Breakdown', 'AI Recommendations'].map((s) => (
+            <label
+              key={s}
+              className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-100 bg-slate-50 px-2 py-1.5 text-[10px] font-medium text-slate-600 hover:border-[#008CFF]/30 transition-colors"
             >
-              {chip}
-            </button>
+              <input type="checkbox" defaultChecked className="h-2.5 w-2.5 accent-[#008CFF]" />
+              {s}
+            </label>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder="Query situation, draft appeal, or request brief…"
-            className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-[12px] text-slate-800 placeholder-slate-400 outline-none focus:border-[#008CFF]/40 focus:bg-white focus:ring-2 focus:ring-[#008CFF]/10 transition-all"
-          />
-          <button
-            onClick={submit}
-            disabled={!draft.trim() || status === 'streaming'}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#008CFF] text-white shadow-sm hover:bg-[#0070CC] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-          >
-            <SendHorizontal size={14} strokeWidth={2.2} />
-          </button>
+        <button
+          onClick={handleGenerate}
+          disabled={generating}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-[#008CFF] px-3 py-2 text-[11px] font-semibold text-white hover:bg-[#0070CC] disabled:opacity-60 transition-colors"
+        >
+          {generating ? (
+            <><RefreshCw size={11} className="animate-spin" /> Generating…</>
+          ) : (
+            <><FileText size={11} /> Generate Report</>
+          )}
+        </button>
+        {generated && (
+          <div className="mt-2 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-2">
+            <p className="text-[10px] font-bold text-emerald-700">{country.name}_SitRep_April2026.pdf</p>
+            <button className="flex items-center gap-1 rounded-md bg-emerald-600 px-2 py-1 text-[9px] font-semibold text-white hover:bg-emerald-700 transition-colors">
+              <Download size={9} /> Save
+            </button>
+          </div>
+        )}
+      </SandboxCard>
+
+      {/* Simulation */}
+      <SandboxCard
+        title="Response Simulation"
+        icon={FlaskConical}
+        description="Model impact of response levers"
+        open={openCard === 'sim'}
+        onToggle={() => toggle('sim')}
+      >
+        <div className="space-y-3">
+          {[
+            {
+              label: 'Extra Funding',
+              value: `+$${sim.fundingBoost * 100}M`,
+              min: 0, max: 20, step: 1,
+              field: 'fundingBoost' as const,
+              hint: ['$0', '$2B'],
+            },
+            {
+              label: 'Corridor Access',
+              value: `${sim.corridorAccess}%`,
+              min: country.simulationBase.corridorAccess, max: 100, step: 5,
+              field: 'corridorAccess' as const,
+              hint: [`${country.simulationBase.corridorAccess}% now`, '100%'],
+            },
+            {
+              label: 'Staff Surge',
+              value: `+${sim.staffSurge * 50}`,
+              min: 0, max: 10, step: 1,
+              field: 'staffSurge' as const,
+              hint: ['0', '+500'],
+            },
+          ].map((r) => (
+            <div key={r.label}>
+              <div className="mb-0.5 flex justify-between text-[10px]">
+                <span className="font-medium text-slate-700">{r.label}</span>
+                <span className="font-bold text-[#008CFF]">{r.value}</span>
+              </div>
+              <input
+                type="range" min={r.min} max={r.max} step={r.step}
+                value={sim[r.field]}
+                onChange={(e) => setSim((s) => ({ ...s, [r.field]: +e.target.value }))}
+                className="w-full accent-[#008CFF]"
+              />
+              <div className="flex justify-between text-[8px] text-slate-400">
+                <span>{r.hint[0]}</span><span>{r.hint[1]}</span>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
-    </SectionCard>
+        <div className="mt-3 rounded-lg border border-[#008CFF]/20 bg-[#008CFF]/5 px-3 py-2.5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#008CFF]">Projected reach</p>
+          <p className="text-lg font-black text-slate-900">
+            {(totalReached / 1000000).toFixed(2)}M
+            <span className="ml-1.5 text-[11px] font-bold text-[#008CFF]">{coveragePct}%</span>
+          </p>
+          <div className="mt-1 relative h-1.5 overflow-hidden rounded-full bg-slate-200">
+            <div
+              className="absolute left-0 top-0 h-full rounded-full bg-[#008CFF] transition-all duration-500"
+              style={{ width: `${coveragePct}%` }}
+            />
+          </div>
+        </div>
+      </SandboxCard>
+    </div>
   );
 }
 
@@ -771,7 +749,10 @@ export default function CrisisPage({ params }: { params: Promise<{ id: string }>
           <AlertTriangle size={40} className="mx-auto mb-3 text-amber-400" />
           <p className="text-base font-bold text-slate-800">Crisis zone not found</p>
           <p className="mb-4 text-sm text-slate-500">No data for &quot;{id}&quot;</p>
-          <button onClick={() => router.push('/')} className="rounded-xl bg-[#008CFF] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0070CC]">
+          <button
+            onClick={() => router.push('/')}
+            className="rounded-xl bg-[#008CFF] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0070CC]"
+          >
             Back to map
           </button>
         </div>
@@ -779,6 +760,17 @@ export default function CrisisPage({ params }: { params: Promise<{ id: string }>
     );
   }
 
+  const seedMessages: UIMessage[] = [
+    {
+      id: 'seed-1',
+      role: 'assistant',
+      parts: [{
+        type: 'text',
+        text: `**${country.name} · AI Brief**\n\nHRP coverage is **${country.fundingPct}%** — ${country.fundingGap} gap against a ${country.totalRequired} requirement. ${country.sectors.reduce((a, b) => ((b.required - b.received) / b.required > (a.required - a.received) / a.required ? b : a)).name} is the most underfunded cluster.\n\nAlert: ${country.aiInsight}\n\nUse the Sandbox above to model scenarios or generate a dossier. Ask me anything about this crisis.`,
+      }],
+    },
+  ];
+  
   return (
     <div className="min-h-screen bg-slate-50 font-sans overflow-y-auto">
       {/* Top nav bar */}
@@ -809,94 +801,43 @@ export default function CrisisPage({ params }: { params: Promise<{ id: string }>
         </div>
       </header>
 
-      {/* Hero stats */}
-      <div className="border-b border-slate-200 bg-white px-6 py-5">
-        <div className="mx-auto max-w-7xl">
-          <div className="mb-1 flex items-center gap-2">
-            <h1 className="text-xl font-black text-slate-900">{country.name} Crisis Dashboard</h1>
-          </div>
-          <p className="mb-5 text-[12px] text-slate-400">
-            Response since {country.responseYear} · {country.conflictType}
+      <CrisisLeftPane country={country} onBack={() => router.push('/')} />
+
+      {/* Center — scrollable content */}
+      <main className="flex flex-1 flex-col overflow-hidden">
+        {/* Thin top bar */}
+        <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-5 py-2.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+            {country.name}
           </p>
-
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              { icon: DollarSign, label: 'Total Required', value: country.totalRequired, color: 'text-slate-800' },
-              { icon: DollarSign, label: 'Funding Gap', value: country.fundingGap, color: 'text-red-600' },
-              { icon: Users, label: 'People in Need', value: country.pin, color: 'text-slate-800' },
-              { icon: TrendingDown, label: 'Coverage', value: `${country.fundingPct}%`, color: country.fundingPct < 50 ? 'text-red-600' : country.fundingPct < 70 ? 'text-amber-600' : 'text-emerald-600' },
-            ].map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <div className="mb-1 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                  <stat.icon size={10} />
-                  {stat.label}
-                </div>
-                <p className={`text-xl font-black ${stat.color}`}>{stat.value}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* Overall funding bar */}
-          <div className="mt-4">
-            <div className="mb-1 flex justify-between text-[11px]">
-              <span className="font-semibold text-slate-600">Overall HRP Funding Progress</span>
-              <span className="font-bold text-slate-800">{country.totalReceived} of {country.totalRequired}</span>
-            </div>
-            <div className="relative h-3 overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="absolute left-0 top-0 h-full rounded-full transition-all duration-1000"
-                style={{
-                  width: `${country.fundingPct}%`,
-                  background: country.fundingPct < 50 ? '#D32F2F' : country.fundingPct < 70 ? '#F59E0B' : '#008CFF',
-                }}
-              />
-            </div>
-            <div className="mt-1 flex items-center gap-1">
-              {country.fundingPct < 50 && <ShieldAlert size={11} className="text-red-500" />}
-              <span className="text-[10px] text-slate-400">
-                {country.fundingPct < 50
-                  ? `Critical: ${100 - country.fundingPct}% of requirements unmet`
-                  : country.fundingPct < 70
-                  ? `Warning: ${100 - country.fundingPct}% of requirements unmet`
-                  : `${100 - country.fundingPct}% gap remaining`}
-              </span>
-            </div>
+          <span className="text-slate-200">/</span>
+          <p className="text-[10px] text-slate-400">Crisis Intelligence · FY 2026</p>
+          <div className="ml-auto flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1">
+            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            <p className="text-[10px] font-medium text-amber-700">{country.aiInsight}</p>
           </div>
         </div>
-      </div>
 
-      {/* AI insight banner */}
-      <div className="border-b border-amber-200 bg-amber-50 px-6 py-3">
-        <div className="mx-auto flex max-w-7xl items-center gap-3">
-          <Zap size={14} className="shrink-0 text-amber-600" />
-          <p className="text-[11px] font-medium text-amber-800">
-            <span className="font-bold">AI Alert:</span> {country.aiInsight}
-          </p>
-        </div>
-      </div>
-
-      {/* Main content grid */}
-      <div className="mx-auto max-w-7xl px-6 py-6">
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 xl:grid-cols-3">
-          {/* Col 1 */}
-          <div className="space-y-5">
-            <UnderfundedAreas sectors={country.sectors} />
-            <DossierGenerator country={country} />
-          </div>
-
-          {/* Col 2 */}
-          <div className="space-y-5">
+        {/* Scrollable sections */}
+        <div className="flex-1 overflow-y-auto px-6 py-6">
+          <div className="mx-auto max-w-2xl space-y-10">
+            <SectorFunding sectors={country.sectors} />
+            <div className="h-px bg-slate-100" />
             <AllocationMismatch items={country.allocationMismatch} />
-            <Simulation country={country} />
-          </div>
-
-          {/* Col 3 — full height on xl */}
-          <div className="space-y-5 lg:col-span-2 xl:col-span-1">
-            <AICopilot country={country} />
+            <div className="h-px bg-slate-100" />
             <RecentDevelopments updates={country.reliefwebUpdates} />
           </div>
         </div>
-      </div>
+      </main>
+
+      {/* Right — AI Copilot sidebar */}
+      <AICopilot
+        seedMessages={seedMessages}
+        quickPrompts={['Draft donor appeal', 'Worst-case scenario', 'CERF eligibility', 'Top 3 priorities', 'Access constraints']}
+        sandboxNode={<CrisisSandbox country={country} />}
+        subtitle={`${country.name} Intelligence`}
+        inputPlaceholder="Query situation, draft appeal, or request brief…"
+      />
     </div>
   );
 }
