@@ -15,8 +15,8 @@ router = APIRouter(prefix="/api/timeline", tags=["Timeline"])
 async def get_structural_timeline(
     iso3: str = Query(..., description="3-letter country code"),
     sector: str = Query(..., description="Sector name"),
-    client: ClientDep = None,
-    config: ConfigDep = None,
+    client: ClientDep = None,  # type: ignore[assignment]
+    config: ConfigDep = None,  # type: ignore[assignment]
 ):
     """
     Multi-Year Structural Timeline for a specific iso3 + sector pair.
