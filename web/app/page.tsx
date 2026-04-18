@@ -219,7 +219,8 @@ function GiniBar({ value }: { value: number }) {
   const color = value > 0.65 ? '#D32F2F' : value > 0.55 ? '#F59E0B' : '#008CFF';
   return (
     <div className="flex items-center gap-2">
-      <div className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+      <div className="relative h-1.5 flex-1 
+      hidden rounded-full bg-slate-100">
         <div
           className="absolute left-0 top-0 h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, background: color }}
@@ -356,10 +357,12 @@ function CenterStage({
   onMouseMove,
   onCountryEnter,
   onCountryLeave,
+  onCountryClick,
 }: {
   onMouseMove: (e: React.MouseEvent) => void;
   onCountryEnter: (id: string) => void;
   onCountryLeave: () => void;
+  onCountryClick: (id: string) => void;
 }) {
   return (
     <main className="relative flex flex-1 flex-col overflow-hidden p-5" onMouseMove={onMouseMove}>
@@ -368,7 +371,7 @@ function CenterStage({
         <div>
           <h1 className="text-base font-bold text-slate-900">Global Crisis Command</h1>
           <p className="text-[11px] text-slate-400">
-            OCHA Ops · FY 2026 · 8 active crisis zones · hover for situation brief
+            OCHA Ops · FY 2026 · 8 active crisis zones · hover for brief · click to open crisis page
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -640,6 +643,7 @@ function RightPane() {
 // ─── Root Page ────────────────────────────────────────────────────────────────
 
 export default function LighthouseOS() {
+  const router = useRouter();
   const [portal, setPortal] = useState<PortalState>({
     visible: false,
     x: 0,
@@ -673,6 +677,10 @@ export default function LighthouseOS() {
     setPortal((prev) => ({ ...prev, visible: false, country: null }));
   }, []);
 
+  const handleCountryClick = useCallback((id: string) => {
+    router.push(`/crisis/${id}`);
+  }, [router]);
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans">
       <LeftPane />
@@ -680,6 +688,7 @@ export default function LighthouseOS() {
         onMouseMove={handleMouseMove}
         onCountryEnter={handleCountryEnter}
         onCountryLeave={handleCountryLeave}
+        onCountryClick={handleCountryClick}
       />
       <RightPane />
 
