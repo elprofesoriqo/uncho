@@ -13,6 +13,7 @@ bronze.inform_severity  — https://api.acaps.org/api/v1/
 DOPRECYZOWAC JAKIE DANE ZEBRAC, JACEK MA API KEY
 bronze.acled_events     — https://acleddata.com/platform/explorer
 bronze.ipc_phases       — inaccessible without API keys
-bronze.reliefweb_parsed — mpc protocol to reliefweb api
+bronze.reliefweb_parsed — https://apidoc.reliefweb.int/endpoints
+MCP AGENT ENRICHMENT LAYER, JACEK HAS API KEY
 bronze.news_sentiment   — Vertex AI visibility/sentiment scores
 ```
