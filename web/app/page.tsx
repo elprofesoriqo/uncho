@@ -1,8 +1,9 @@
 'use client';
 
-import { useRef, useState, useCallback } from 'react';
-import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport, type UIMessage } from 'ai';
+import { useRef, useState, useCallback } from "react";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
+import { ComposableMap, Geographies, Geography } from "react-simple-maps";
 import {
   Globe,
   BarChart3,
@@ -138,51 +139,25 @@ const SEED_MESSAGES: UIMessage[] = [
   },
 ];
 
-// ─── SVG Map paths (simplified schematic country shapes) ─────────────────────
-// Each path is a rough schematic blob — not geo-accurate, purely illustrative.
+function getCountryByGeoName(name: string): CountryData | null {
+  const id = COUNTRY_NAME_ALIASES[name];
+  if (!id) return null;
+  return COUNTRIES[id] ?? null;
+}
 
-const MAP_PATHS: Array<{ id: string; d: string }> = [
-  // Sudan — center-north Africa
-  {
-    id: 'SD',
-    d: 'M 305 145 L 345 140 L 360 155 L 355 200 L 340 215 L 310 210 L 295 190 L 295 165 Z',
-  },
-  // Yemen — Arabian Peninsula south
-  {
-    id: 'YE',
-    d: 'M 390 175 L 430 168 L 445 180 L 435 200 L 400 205 L 385 192 Z',
-  },
-  // DR Congo — central Africa
-  {
-    id: 'CD',
-    d: 'M 290 220 L 335 215 L 350 240 L 340 275 L 305 280 L 278 260 L 280 235 Z',
-  },
-  // Afghanistan — central Asia
-  {
-    id: 'AF',
-    d: 'M 445 130 L 490 120 L 510 135 L 505 158 L 470 165 L 445 155 Z',
-  },
-  // Ethiopia — east Africa
-  {
-    id: 'ET',
-    d: 'M 340 220 L 375 215 L 390 235 L 378 260 L 350 262 L 335 245 Z',
-  },
-  // Somalia — horn of Africa
-  {
-    id: 'SO',
-    d: 'M 380 222 L 405 218 L 420 240 L 410 268 L 388 265 L 378 245 Z',
-  },
-  // Syria — Levant
-  {
-    id: 'SY',
-    d: 'M 355 118 L 390 114 L 398 130 L 385 145 L 355 142 L 348 128 Z',
-  },
-  // Ukraine — eastern Europe
-  {
-    id: 'UA',
-    d: 'M 305 72 L 355 65 L 370 80 L 360 100 L 320 104 L 298 90 Z',
-  },
-];
+function getCountryHeat(country: CountryData): string {
+  const priorityWeight =
+    country.priority === "CRITICAL"
+      ? 0.38
+      : country.priority === "HIGH"
+        ? 0.26
+        : 0.16;
+  const intensity = Math.min(1, country.gini + priorityWeight);
+  const hue = 44 - intensity * 40;
+  const saturation = 92;
+  const lightness = 92 - intensity * 50;
+  return `hsl(${Math.round(hue)} ${saturation}% ${Math.round(lightness)}%)`;
+}
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
@@ -405,89 +380,82 @@ function CenterStage({
           }}
         />
 
-        {/* Ocean fill */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50/30 to-slate-50" />
+        {/* World projection map with crisis heat */}
+        <div className="absolute inset-0">
+          <ComposableMap
+            width={800}
+            height={600}
+            projection="geoMercator"
+            projectionConfig={{
+              scale: 120,
+              center: [0, 46],
+            }}
+            preserveAspectRatio="xMidYMid slice"
+            className="h-full w-full"
+          >
+            <Geographies geography={GEO_URL} >
+              {({
+                geographies,
+              }: {
+                geographies: Array<{
+                  rsmKey: string;
+                  properties: { name?: string };
+                }>;
+              }) =>
+                geographies
+                  .filter((geo) => geo.properties?.name !== "Antarctica")
+                  .map(
+                    (geo: {
+                      rsmKey: string;
+                      properties: { name?: string };
+                    }) => {
+                      const geoName =
+                        (geo.properties as { name?: string }).name ?? "";
+                      const crisisCountry = getCountryByGeoName(geoName);
+                      const baseFill = crisisCountry
+                        ? getCountryHeat(crisisCountry)
+                        : "#E8EDF3";
 
-        {/* SVG Map */}
-        <svg
-          viewBox="0 0 700 420"
-          className="relative h-full w-full"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          {/* Continent silhouettes (decorative, non-interactive) */}
-          {/* Africa */}
-          <path
-            d="M 240 95 L 420 88 L 445 110 L 455 180 L 440 280 L 395 360 L 340 375 L 280 355 L 240 290 L 220 200 L 225 130 Z"
-            fill="#f1f5f9"
-            stroke="#e2e8f0"
-            strokeWidth="1"
-          />
-          {/* Europe */}
-          <path
-            d="M 240 40 L 400 35 L 420 70 L 380 100 L 290 105 L 230 85 Z"
-            fill="#f1f5f9"
-            stroke="#e2e8f0"
-            strokeWidth="1"
-          />
-          {/* Middle East / Asia */}
-          <path
-            d="M 400 60 L 580 50 L 610 100 L 580 170 L 500 185 L 420 165 L 395 110 Z"
-            fill="#f1f5f9"
-            stroke="#e2e8f0"
-            strokeWidth="1"
-          />
-          {/* Asia far east */}
-          <path
-            d="M 575 45 L 670 40 L 680 130 L 620 160 L 578 140 L 568 80 Z"
-            fill="#f1f5f9"
-            stroke="#e2e8f0"
-            strokeWidth="1"
-          />
-
-          {/* Interactive crisis zone paths */}
-          {MAP_PATHS.map((p) => (
-            <path
-              key={p.id}
-              d={p.d}
-              className="country-path"
-              onMouseEnter={() => onCountryEnter(p.id)}
-              onMouseLeave={onCountryLeave}
-            />
-          ))}
-
-          {/* Labels */}
-          {MAP_PATHS.map((p) => {
-            const c = COUNTRIES[p.id];
-            if (!c) return null;
-            // Rough centroid — just use a fixed offset per country
-            const labelMap: Record<string, [number, number]> = {
-              SD: [328, 185],
-              YE: [415, 190],
-              CD: [313, 250],
-              AF: [477, 145],
-              ET: [363, 243],
-              SO: [399, 245],
-              SY: [373, 132],
-              UA: [333, 88],
-            };
-            const [lx, ly] = labelMap[p.id] ?? [0, 0];
-            return (
-              <text
-                key={`lbl-${p.id}`}
-                x={lx}
-                y={ly}
-                textAnchor="middle"
-                fontSize="7"
-                fontWeight="700"
-                fill="white"
-                className="pointer-events-none select-none"
-                style={{ letterSpacing: '0.08em' }}
-              >
-                {p.id}
-              </text>
-            );
-          })}
-        </svg>
+                      return (
+                        <Geography
+                          key={geo.rsmKey}
+                          geography={geo}
+                          onMouseEnter={(
+                            e: React.MouseEvent<SVGPathElement>,
+                          ) => {
+                            if (!crisisCountry) return;
+                            onCountryEnter(crisisCountry.id, e);
+                          }}
+                          onMouseLeave={onCountryLeave}
+                          style={{
+                            default: {
+                              fill: baseFill,
+                              stroke: "#D6DEE8",
+                              strokeWidth: 0.45,
+                              outline: "none",
+                            },
+                            hover: {
+                              fill: crisisCountry ? "#D32F2F" : "#DDE4EC",
+                              stroke: "#BFC9D6",
+                              strokeWidth: 0.6,
+                              outline: "none",
+                              cursor: crisisCountry ? "pointer" : "default",
+                            },
+                            pressed: {
+                              fill: crisisCountry ? "#B71C1C" : "#DDE4EC",
+                              stroke: "#BFC9D6",
+                              strokeWidth: 0.6,
+                              outline: "none",
+                            },
+                          }}
+                        />
+                      );
+                    },
+                  )
+              }
+            </Geographies>
+          </ComposableMap>
+        </div>
 
         {/* Legend */}
         <div className="absolute bottom-4 left-4 flex items-center gap-4 rounded-xl border border-slate-200 bg-white/90 px-4 py-2.5 backdrop-blur-sm shadow-sm">
@@ -670,14 +638,19 @@ export default function LighthouseOS() {
     setPortal((prev) => ({ ...prev, x: e.clientX, y: e.clientY }));
   }, []);
 
-  const handleCountryEnter = useCallback((id: string) => {
-    hoveredCountryRef.current = id;
-    setPortal((prev) => ({
-      ...prev,
-      visible: true,
-      country: COUNTRIES[id] ?? null,
-    }));
-  }, []);
+  const handleCountryEnter = useCallback(
+    (id: string, e: React.MouseEvent<SVGPathElement>) => {
+      hoveredCountryRef.current = id;
+      setPortal((prev) => ({
+        ...prev,
+        visible: true,
+        x: e.clientX,
+        y: e.clientY,
+        country: COUNTRIES[id] ?? null,
+      }));
+    },
+    [],
+  );
 
   const handleCountryLeave = useCallback(() => {
     hoveredCountryRef.current = null;
