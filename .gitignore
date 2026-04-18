@@ -205,3 +205,29 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# === Lighthouse OS Project ===
+# Downloaded humanitarian data (large CSVs/parquet)
+data/raw/
+data/processed/
+data/geo/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/geo/.gitkeep
+
+# Node / Frontend
+node_modules/
+.next/
+out/
+
+# Databricks
+*.whl
+metastore_db/
+spark-warehouse/
+derby.log
+
+# IDE
+.vscode/
+.idea/
+
+uv.lock
