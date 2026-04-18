@@ -124,6 +124,22 @@ const PRIORITY_COLORS: Record<string, string> = {
   MODERATE: 'bg-blue-100 text-blue-700 border-blue-200',
 };
 
+const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+
+const COUNTRY_NAME_ALIASES: Record<string, CountryData['id']> = {
+  Sudan: 'SD',
+  Yemen: 'YE',
+  'Democratic Republic of the Congo': 'CD',
+  'Dem. Rep. Congo': 'CD',
+  'Congo, the Democratic Republic of the': 'CD',
+  Afghanistan: 'AF',
+  Ethiopia: 'ET',
+  Somalia: 'SO',
+  Syria: 'SY',
+  'Syrian Arab Republic': 'SY',
+  Ukraine: 'UA',
+};
+
 // ─── Sample seed messages for the AI pane ────────────────────────────────────
 
 const SEED_MESSAGES: UIMessage[] = [
