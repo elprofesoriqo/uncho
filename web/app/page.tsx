@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage } from 'ai';
 import {
@@ -365,10 +366,12 @@ function CenterStage({
   onMouseMove,
   onCountryEnter,
   onCountryLeave,
+  onCountryClick,
 }: {
   onMouseMove: (e: React.MouseEvent) => void;
   onCountryEnter: (id: string) => void;
   onCountryLeave: () => void;
+  onCountryClick: (id: string) => void;
 }) {
   return (
     <main className="relative flex flex-1 flex-col overflow-hidden p-5" onMouseMove={onMouseMove}>
@@ -377,7 +380,7 @@ function CenterStage({
         <div>
           <h1 className="text-base font-bold text-slate-900">Global Crisis Command</h1>
           <p className="text-[11px] text-slate-400">
-            OCHA Ops · FY 2026 · 8 active crisis zones · hover for situation brief
+            OCHA Ops · FY 2026 · 8 active crisis zones · hover for brief · click to open crisis page
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -452,6 +455,7 @@ function CenterStage({
               className="country-path"
               onMouseEnter={() => onCountryEnter(p.id)}
               onMouseLeave={onCountryLeave}
+              onClick={() => onCountryClick(p.id)}
             />
           ))}
 
@@ -656,6 +660,7 @@ function RightPane() {
 // ─── Root Page ────────────────────────────────────────────────────────────────
 
 export default function LighthouseOS() {
+  const router = useRouter();
   const [portal, setPortal] = useState<PortalState>({
     visible: false,
     x: 0,
@@ -684,6 +689,10 @@ export default function LighthouseOS() {
     setPortal((prev) => ({ ...prev, visible: false, country: null }));
   }, []);
 
+  const handleCountryClick = useCallback((id: string) => {
+    router.push(`/crisis/${id}`);
+  }, [router]);
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50 font-sans">
       <LeftPane />
@@ -691,6 +700,7 @@ export default function LighthouseOS() {
         onMouseMove={handleMouseMove}
         onCountryEnter={handleCountryEnter}
         onCountryLeave={handleCountryLeave}
+        onCountryClick={handleCountryClick}
       />
       <RightPane />
 
