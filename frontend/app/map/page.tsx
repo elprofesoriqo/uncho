@@ -2,7 +2,6 @@
 import { useState } from "react";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
-import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
 import type { GeoFeature } from "@/lib/types";
 import { Skeleton, ErrorBanner } from "@/components/ui/Primitives";
@@ -78,8 +77,7 @@ function CountryPanel({ iso3, onClose }: { iso3: string; onClose: () => void }) 
 }
 
 export default function MapPage() {
-  const sp = useSearchParams();
-  const [mode, setMode] = useState(sp.get("mode") ?? "CHOROPLETH_COVERAGE");
+  const [mode, setMode] = useState("CHOROPLETH_COVERAGE");
   const [year, setYear] = useState("");
   const [sector, setSector] = useState("");
   const [selected, setSelected] = useState<string | null>(null);
