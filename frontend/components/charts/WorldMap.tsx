@@ -83,6 +83,7 @@ export default function WorldMap({
   return (
     <div className="absolute inset-0 h-full w-full select-none">
       <ComposableMap
+        // @ts-ignore
         width={800}
         height={600}
         projection="geoMercator"
