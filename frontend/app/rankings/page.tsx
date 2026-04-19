@@ -119,7 +119,6 @@ export default function RankingsPage() {
     { key: "country", label: "Country / Sector", sortable: false },
     { key: "mismatch_score_lower_bound", label: "MismatchScore", sortable: true },
     { key: "coverage_ratio", label: "Coverage", sortable: true },
-    { key: "people_in_need", label: "People in Need", sortable: true },
     { key: "requirements_usd", label: "Required", sortable: true },
     { key: "inform_severity", label: "Severity", sortable: true },
     { key: "crisis_type", label: "Type", sortable: false },
@@ -205,11 +204,6 @@ export default function RankingsPage() {
                         </td>
                         <td className="px-3 py-2.5 min-w-[120px]">
                           <CoveragePct value={c.coverage_ratio} />
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span className="mono tabular text-[12px] text-muted">
-                            {+c.people_in_need >= 1e6 ? `${(+c.people_in_need / 1e6).toFixed(1)}M` : (+c.people_in_need)?.toLocaleString() ?? "—"}
-                          </span>
                         </td>
                         <td className="px-3 py-2.5">
                           <span className="mono tabular text-[12px] text-muted">

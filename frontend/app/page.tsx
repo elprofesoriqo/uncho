@@ -141,7 +141,7 @@ export default function DashboardPage() {
       {sumErr ? (
         <ErrorBanner error="Could not load summary statistics." />
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-[1fr_1fr_380px] gap-3 mb-6">
           {!summary ? (
             Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="card p-5">
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                 sub="global average"
                 color="text-[#ca8a04]"
               />
-              <KpiCard
+              {/* <KpiCard
                 icon={Users}
                 label="People in Need"
                 value={
@@ -181,7 +181,7 @@ export default function DashboardPage() {
                 }
                 sub={`${summary.critically_underfunded_count} critically underfunded`}
                 color="text-orange-400"
-              />
+              /> */}
             </>
           )}
         </div>
