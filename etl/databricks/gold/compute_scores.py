@@ -154,12 +154,12 @@ def compute_mismatch_scores(client: DatabricksClient, config: DatabricksConfig) 
     # Composite MismatchScore
     # ---------------------------------------------------------
     df["mismatch_score"] = (
-        df["need_weight"]
-        * df["gap_severity"]
+        df["gap_severity"]
         * df["structural_multiplier"]
         * df["visibility_penalty"]
         * df["urgency_weight"]
-        * df["efficiency_discount"]
+        # * df["need_weight"]
+        # * df["efficiency_discount"]
     )
     
     # ---------------------------------------------------------

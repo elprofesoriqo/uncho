@@ -55,19 +55,21 @@ export default function WorldMap({
   const [tip, setTip] = useState<string>("");
   const dataMap = Object.fromEntries(features.map((f) => [f.iso3, f]));
 
-  function getFill(dRec: Record<string, number | string>): string {
+  function getFill(dRec?: GeoFeature): string {
     // if (!d) return "#1a2538";
     if (encodingField === "coverage_ratio")
-      return coverageColor(+dRec.coverage_ratio);
-    if (
-      encodingField === "mismatch_score" ||
-      encodingField === "mismatch_score_lower_bound"
-    )
-      return mismatchColor(+(dRec[encodingField]));
-    if (encodingField === "inform_severity")
-      return severityColor(+(dRec[encodingField] ?? 0));
+      return coverageColor(+(dRec?.coverage_ratio ?? 0));
+    if (encodingField === "mismatch_score")
+      return mismatchColor(+(dRec?.mismatch_score ?? 0));
+    if (encodingField === "mismatch_score_lower_bound")
+      return mismatchColor(+(dRec?.mismatch_score_lower_bound ?? 0));
+    if (encodingField === "inform_severity") {
+      return severityColor(
+        +((dRec as GeoFeature & { inform_severity?: number }) ?? 0),
+      );
+    }
     if (encodingField === "people_in_need") {
-      const pin = +dRec.people_in_need;
+      const pin = +(dRec?.people_in_need ?? 0);
       if (pin >= 5e6) return "#dc2626";
       if (pin >= 2e6) return "#ea580c";
       if (pin >= 500_000) return "#ca8a04";
@@ -105,7 +107,7 @@ export default function WorldMap({
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill={getFill(d || {})}
+                  fill={getFill(d)}
                   stroke="#070c18"
                   strokeWidth={0.4}
                   data-tooltip-id="map-tip"
