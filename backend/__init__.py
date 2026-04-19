@@ -1,0 +1,1 @@
+"""Lighthouse OS — Backend package."""

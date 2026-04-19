@@ -46,37 +46,37 @@ class DatabricksClient:
             import os
             from databricks import sql as databricks_sql
 
+            # Prevent any browser-based interactive auth fallback.
+            os.environ["DATABRICKS_NO_INTERACTIVE"] = "true"
+
             auth_params = {
                 "server_hostname": self.config.host.replace("https://", ""),
                 "http_path": self.config.http_path,
             }
 
-            # Try PAT first, then OAuth M2M. Catch specific auth failures if possible.
-            try:
-                if self.config.token:
-                    os.environ["DATABRICKS_AUTH_TYPE"] = "pat"
-                    auth_params["auth_type"] = "pat"
-                    auth_params["access_token"] = self.config.token
-                    self._connection = databricks_sql.connect(**auth_params)
-                    self._backend = "databricks"
-                    logger.info(f"Connected to Databricks (PAT): {self.config.host}")
-                    return
-            except Exception as e:
-                if self.config.client_id and self.config.client_secret:
-                    logger.debug(f"PAT connection failed: {e}. Trying OAuth M2M...")
-                else:
-                    raise e
-            
+            # Prefer OAuth M2M when credentials are present — skips PAT entirely
+            # so the SDK never opens a browser for OIDC.
             if self.config.client_id and self.config.client_secret:
                 os.environ["DATABRICKS_AUTH_TYPE"] = "oauth-m2m"
                 auth_params["auth_type"] = "oauth-m2m"
-                auth_params.pop("access_token", None)
                 auth_params["client_id"] = self.config.client_id
                 auth_params["client_secret"] = self.config.client_secret
                 self._connection = databricks_sql.connect(**auth_params)
                 self._backend = "databricks"
                 logger.info(f"Connected to Databricks (OAuth M2M): {self.config.host}")
                 return
+
+            # Fall back to PAT only when no M2M credentials are configured.
+            if self.config.token:
+                os.environ["DATABRICKS_AUTH_TYPE"] = "pat"
+                auth_params["auth_type"] = "pat"
+                auth_params["access_token"] = self.config.token
+                self._connection = databricks_sql.connect(**auth_params)
+                self._backend = "databricks"
+                logger.info(f"Connected to Databricks (PAT): {self.config.host}")
+                return
+
+            raise ValueError("No Databricks credentials configured (need client_id+client_secret or token).")
 
         except Exception as e:
             logger.warning(f"Databricks connection failed: {e}. Falling back to DuckDB.")

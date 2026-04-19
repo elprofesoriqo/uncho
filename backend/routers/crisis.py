@@ -1,23 +1,29 @@
 """
 Crisis router — Single-crisis deep-dive: detail, sector breakdown, donors, related crises.
 """
+import time
 from fastapi import APIRouter, HTTPException
-from cachetools import cached
 
-from backend.deps import ClientDep, ConfigDep, get_crisis_cache
+from backend.deps import ClientDep, ConfigDep
 
 router = APIRouter(prefix="/api/crisis", tags=["Crisis Detail"])
 
+# Simple in-memory TTL cache (safe for async — no decorator needed)
+_detail_cache: dict = {}
+_CACHE_TTL = 120  # seconds
+
 
 @router.get("/{crisis_id}")
-@cached(cache=get_crisis_cache())
 async def get_crisis_detail(crisis_id: str, client: ClientDep, config: ConfigDep):
     """
     Full detail panel for a single crisis_id. Used when user clicks a row or a globe country.
     Returns all scored dimensions, all confidence metadata, and Kumo prediction summary.
     """
+    now = time.time()
+    if crisis_id in _detail_cache and now - _detail_cache[crisis_id]["ts"] < _CACHE_TTL:
+        return _detail_cache[crisis_id]["data"]
+
     try:
-        from tools.query_kumo_predictions import query_kumo_predictions_impl
         import json
 
         table = config.gold_table("crisis_index")
@@ -27,10 +33,16 @@ async def get_crisis_detail(crisis_id: str, client: ClientDep, config: ConfigDep
 
         crisis = df.iloc[0].fillna(0).to_dict()
 
-        preds_raw = query_kumo_predictions_impl(client, config, crisis_id)
-        crisis["kumo_predictions"] = json.loads(preds_raw)
+        try:
+            from tools.query_kumo_predictions import query_kumo_predictions_impl
+            preds_raw = query_kumo_predictions_impl(client, config, crisis_id)
+            crisis["kumo_predictions"] = json.loads(preds_raw)
+        except Exception:
+            crisis["kumo_predictions"] = {}
 
-        return {"status": "success", "crisis": crisis}
+        result = {"status": "success", "crisis": crisis}
+        _detail_cache[crisis_id] = {"ts": now, "data": result}
+        return result
     except HTTPException:
         raise
     except Exception as e:

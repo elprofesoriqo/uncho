@@ -2,14 +2,18 @@
 Rankings router — Crisis Universe with full filter/sort/pagination.
 """
 import json
+import time
 from typing import Optional
 
-from cachetools import cached
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.deps import ClientDep, ConfigDep, get_rankings_cache
+from backend.deps import ClientDep, ConfigDep
 
 router = APIRouter(prefix="/api/rankings", tags=["Rankings"])
+
+# Simple async-safe TTL cache
+_rankings_cache: dict = {}
+_CACHE_TTL = 60
 
 
 def _build_ranking_query(config, region, sector, year, min_pin, max_cov,
@@ -48,7 +52,6 @@ def _build_ranking_query(config, region, sector, year, min_pin, max_cov,
 
 
 @router.get("")
-@cached(cache=get_rankings_cache())
 async def get_rankings(
     client: ClientDep,
     config: ConfigDep,
@@ -69,6 +72,11 @@ async def get_rankings(
     Full Crisis Universe with advanced filtering, sorting and pagination.
     Supports 9 independent filter dimensions and any column sort.
     """
+    cache_key = f"{region}|{sector}|{year}|{min_people_in_need}|{max_coverage_ratio}|{min_mismatch_score}|{crisis_type}|{confidence_level}|{sort_by}|{sort_order}|{limit}|{offset}"
+    now = time.time()
+    if cache_key in _rankings_cache and now - _rankings_cache[cache_key]["ts"] < _CACHE_TTL:
+        return _rankings_cache[cache_key]["data"]
+
     try:
         q = _build_ranking_query(
             config, region, sector, year, min_people_in_need, max_coverage_ratio,
@@ -80,7 +88,7 @@ async def get_rankings(
             return {"status": "success", "total": 0, "crises": []}
 
         df = df.fillna(0)
-        return {
+        result = {
             "status": "success",
             "filters_applied": {
                 "region": region, "sector": sector, "year": year,
@@ -90,6 +98,8 @@ async def get_rankings(
             "total": len(df),
             "crises": df.to_dict(orient="records"),
         }
+        _rankings_cache[cache_key] = {"ts": now, "data": result}
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

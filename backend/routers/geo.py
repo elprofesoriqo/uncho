@@ -1,22 +1,12 @@
 """
 Geo router — All map layer endpoints for 7 distinct visualization modes.
-
-Modes:
-  CHOROPLETH_COVERAGE  — Country fill by coverage_ratio (red=underfunded, green=covered)
-  CHOROPLETH_MISMATCH  — Country fill by mismatch_score
-  HEATMAP_SEVERITY     — INFORM severity heatmap (point intensity)
-  HEATMAP_PIN          — People-in-need heatmap
-  BUBBLE_MAP           — Bubble: size=people_in_need, color=coverage_ratio
-  FLOW_DONORS          — Arc map: top donor country → recipient country
-  PREDICTIVE_RISK      — Kumo predicted coverage change (countries declining in next 6 months)
 """
-import json
+import time
 from typing import Optional
 
-from cachetools import cached
 from fastapi import APIRouter, HTTPException, Query
 
-from backend.deps import ClientDep, ConfigDep, get_geo_cache
+from backend.deps import ClientDep, ConfigDep
 
 router = APIRouter(prefix="/api/geo", tags=["Geo / Maps"])
 
@@ -25,9 +15,11 @@ _MAP_MODES = {
     "HEATMAP_PIN", "BUBBLE_MAP", "FLOW_DONORS", "PREDICTIVE_RISK",
 }
 
+_geo_cache: dict = {}
+_CACHE_TTL = 120
+
 
 @router.get("/map-data")
-@cached(cache=get_geo_cache())
 async def get_map_data(
     client: ClientDep,
     config: ConfigDep,
@@ -42,10 +34,18 @@ async def get_map_data(
     if mode not in _MAP_MODES:
         raise HTTPException(status_code=400, detail=f"Unknown mode. Valid: {sorted(_MAP_MODES)}")
 
+    cache_key = f"{mode}|{year}|{sector}"
+    now = time.time()
+    if cache_key in _geo_cache and now - _geo_cache[cache_key]["ts"] < _CACHE_TTL:
+        return _geo_cache[cache_key]["data"]
+
     try:
+        import json
         table = config.gold_table("crisis_index")
         year_filter = f" AND year = '{year}'" if year else ""
         sector_filter = f" AND sector = '{sector}'" if sector else ""
+
+        result = None
 
         if mode in ("CHOROPLETH_COVERAGE", "CHOROPLETH_MISMATCH"):
             q = f"""
@@ -63,7 +63,7 @@ async def get_map_data(
             """
             df = client.query(q)
             key = "coverage_ratio" if mode == "CHOROPLETH_COVERAGE" else "mismatch_score"
-            return {
+            result = {
                 "mode": mode,
                 "encoding_field": key,
                 "features": df.fillna(0).to_dict(orient="records"),
@@ -81,7 +81,7 @@ async def get_map_data(
             """
             df = client.query(q)
             intensity_field = "inform_severity" if mode == "HEATMAP_SEVERITY" else "people_in_need"
-            return {
+            result = {
                 "mode": mode,
                 "intensity_field": intensity_field,
                 "points": df.fillna(0).to_dict(orient="records"),
@@ -100,7 +100,7 @@ async def get_map_data(
                 GROUP BY iso3, country, region
             """
             df = client.query(q)
-            return {
+            result = {
                 "mode": mode,
                 "size_field": "people_in_need",
                 "color_field": "coverage_ratio",
@@ -110,58 +110,66 @@ async def get_map_data(
         elif mode == "FLOW_DONORS":
             donor_table = config.gold_table("donor_concentration")
             if not client.table_exists(donor_table):
-                return {"mode": mode, "flows": [], "warning": "Donor data not yet computed."}
-            q = f"""
-                SELECT iso3 as recipient_iso3, top_donor as donor_label,
-                       CAST(hhi_index AS DOUBLE) as hhi_index,
-                       CAST(top_donor_share AS DOUBLE) as top_donor_share
-                FROM {donor_table}
-                WHERE top_donor IS NOT NULL
-                LIMIT 300
-            """
-            df = client.query(q)
-            return {
-                "mode": mode,
-                "description": "Arc thickness = top donor share. Color = HHI concentration.",
-                "flows": df.fillna(0).to_dict(orient="records"),
-            }
+                result = {"mode": mode, "flows": [], "warning": "Donor data not yet computed."}
+            else:
+                q = f"""
+                    SELECT iso3 as recipient_iso3, top_donor as donor_label,
+                           CAST(hhi_index AS DOUBLE) as hhi_index,
+                           CAST(top_donor_share AS DOUBLE) as top_donor_share
+                    FROM {donor_table}
+                    WHERE top_donor IS NOT NULL
+                    LIMIT 300
+                """
+                df = client.query(q)
+                result = {
+                    "mode": mode,
+                    "description": "Arc thickness = top donor share. Color = HHI concentration.",
+                    "flows": df.fillna(0).to_dict(orient="records"),
+                }
 
         elif mode == "PREDICTIVE_RISK":
             gap_table = config.gold_table("kumo_predictions_gap")
             if not client.table_exists(gap_table):
-                return {"mode": mode, "features": [], "warning": "Kumo predictions not yet generated."}
-            crisis_q = f"""
-                SELECT iso3, country, region,
-                       AVG(CAST(coverage_ratio AS DOUBLE)) as coverage_ratio
-                FROM {table}
-                WHERE is_in_scope = True {year_filter}
-                GROUP BY iso3, country, region
-            """
-            crisis_df = client.query(crisis_q)
+                result = {"mode": mode, "features": [], "warning": "Kumo predictions not yet generated."}
+            else:
+                crisis_q = f"""
+                    SELECT iso3, country, region,
+                           AVG(CAST(coverage_ratio AS DOUBLE)) as coverage_ratio
+                    FROM {table}
+                    WHERE is_in_scope = True {year_filter}
+                    GROUP BY iso3, country, region
+                """
+                crisis_df = client.query(crisis_q)
+                kumo_q = f"SELECT crisis_id, predicted_coverage_6m, confidence_lower, confidence_upper FROM {gap_table}"
+                kumo_df = client.query(kumo_q)
 
-            kumo_q = f"SELECT crisis_id, predicted_coverage_6m, confidence_lower, confidence_upper FROM {gap_table}"
-            kumo_df = client.query(kumo_q)
+                if not kumo_df.empty and not crisis_df.empty:
+                    import pandas as pd
+                    kumo_df["iso3"] = kumo_df["crisis_id"].str.split("_").str[0]
+                    merged = crisis_df.merge(
+                        kumo_df.groupby("iso3").agg(
+                            predicted_coverage_6m=("predicted_coverage_6m", "mean"),
+                            confidence_lower=("confidence_lower", "mean"),
+                            confidence_upper=("confidence_upper", "mean"),
+                        ).reset_index(),
+                        on="iso3", how="left"
+                    )
+                    merged["predicted_change"] = (
+                        merged["predicted_coverage_6m"].fillna(merged["coverage_ratio"]) - merged["coverage_ratio"]
+                    )
+                    result = {
+                        "mode": mode,
+                        "description": "predicted_change < 0 means coverage is expected to decline.",
+                        "features": merged.fillna(0).to_dict(orient="records"),
+                    }
+                else:
+                    result = {"mode": mode, "features": crisis_df.fillna(0).to_dict(orient="records")}
 
-            if not kumo_df.empty and not crisis_df.empty:
-                import pandas as pd
-                kumo_df["iso3"] = kumo_df["crisis_id"].str.split("_").str[0]
-                merged = crisis_df.merge(
-                    kumo_df.groupby("iso3").agg(
-                        predicted_coverage_6m=("predicted_coverage_6m", "mean"),
-                        confidence_lower=("confidence_lower", "mean"),
-                        confidence_upper=("confidence_upper", "mean"),
-                    ).reset_index(),
-                    on="iso3", how="left"
-                )
-                merged["predicted_change"] = (
-                    merged["predicted_coverage_6m"].fillna(merged["coverage_ratio"]) - merged["coverage_ratio"]
-                )
-                return {
-                    "mode": mode,
-                    "description": "predicted_change < 0 means coverage is expected to decline.",
-                    "features": merged.fillna(0).to_dict(orient="records"),
-                }
-            return {"mode": mode, "features": crisis_df.fillna(0).to_dict(orient="records")}
+        if result is None:
+            result = {"mode": mode, "features": [], "warning": "No data returned."}
+
+        _geo_cache[cache_key] = {"ts": now, "data": result}
+        return result
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
