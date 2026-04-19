@@ -21,7 +21,7 @@ const NAV = [
   { href: "/map", label: "Globe Map", icon: Globe2 },
   { href: "/simulator", label: "Simulator", icon: TrendingUp },
   { href: "/timeline", label: "Timeline", icon: BarChart2 },
-  { href: "/data-health", label: "Data Health", icon: Shield },
+  // { href: "/data-health", label: "Data Health", icon: Shield },
   { href: "/chat", label: "AI Co-Pilot", icon: MessageSquare },
 ];
 
@@ -54,16 +54,15 @@ export default function Sidebar() {
           Navigation
         </p>
         {NAV.map(({ href, label, icon: Icon }) => {
-          const active =
-            path === href || (href !== "/" && path.startsWith(href));
+          const active = path === href;
           return (
             <Link
               key={href}
               href={href}
               className={clsx(
-                "flex items-center gap-3 mx-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150",
+                "flex items-center gap-3 mx-3 px-3 py-2.5 border border-transparent rounded-lg text-[13px] font-medium transition-all duration-150",
                 active
-                  ? "bg-accent/10 text-accent border border-accent/20"
+                  ? "bg-accent/10 text-text border-accent/20"
                   : "text-muted hover:text-text hover:bg-surface-2",
               )}
             >

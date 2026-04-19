@@ -272,59 +272,6 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-
-      {/* Quick links */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
-        {[
-          {
-            href: "/simulator",
-            label: "Impact Simulator",
-            icon: TrendingDown,
-            color: "text-accent",
-          },
-          {
-            href: "/map?mode=HEATMAP_SEVERITY",
-            label: "Severity Heatmap",
-            icon: Globe2,
-            color: "text-orange-400",
-          },
-          {
-            href: "/map?mode=FLOW_DONORS",
-            label: "Donor Flows",
-            icon: DollarSign,
-            color: "text-covered",
-          },
-          {
-            href: "/data-health",
-            label: "Data Health",
-            icon: BarChart3,
-            color: "text-[#ca8a04]",
-          },
-          {
-            href: "/chat",
-            label: "AI Co-Pilot",
-            icon: Users,
-            color: "text-sky",
-          },
-          {
-            href: "/rankings?crisisType=STRUCTURAL",
-            label: "Structural Crises",
-            icon: AlertTriangle,
-            color: "text-severe",
-          },
-        ].map(({ href, label, icon: Icon, color }) => (
-          <Link
-            key={href}
-            href={href}
-            className="card px-3 py-3 flex items-center gap-2 hover:bg-surface-2 hover:border-border-2 transition-all"
-          >
-            <Icon size={13} className={color} />
-            <span className="text-[11px] text-muted hover:text-text truncate">
-              {label}
-            </span>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }
